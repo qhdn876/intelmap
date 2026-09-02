@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>intelmap · 个人态势看板</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand"><b>intelmap</b><span class="mut">个人态势看板</span></div>
+  <div class="ranges" id="ranges"></div>
+  <input id="search" placeholder="搜索标题 / 标签 / 国家…（按 / 聚焦）" autocomplete="off">
+  <div class="acts">
+    <span id="tick" class="mut small"></span>
+    <a id="csv" href="/api/export.csv" download><button>导出 CSV</button></a>
+    <button id="refreshBtn" title="立刻抓一轮（POST /api/refresh）">抓取</button>
+    <button id="autoBtn" class="on" title="自动刷新">自动</button>
+  </div>
+</header>
+
+<main>
+  <aside id="rail">
+    <div class="rail-scroll">
+      <section>
+        <h4>关注点 <span class="mut" id="watchCount"></span></h4>
+        <div id="watchBox" class="chips"></div>
+        <div class="watch-add">
+          <input id="watchInput" placeholder="加一个关键词，如 霍尔木兹">
+          <button id="watchAdd">+</button>
+        </div>
+        <label class="onlymatch"><input type="checkbox" id="onlyMatch"> 只看命中</label>
+      </section>
+      <section>
+        <h4>图层</h4>
+        <div id="layerBox" class="chips"></div>
+      </section>
+      <section>
+        <h4>信号源 <span class="mut" id="srcCount"></span></h4>
+        <div id="sourceList"></div>
+      </section>
+      <section>
+        <h4>采集健康</h4>
+        <div id="healthList" class="small"></div>
+      </section>
+    </div>
+    <footer class="rail-foot"><span id="totals" class="small mut"></span></footer>
+  </aside>
+
+  <div id="mapwrap">
+    <div id="map"></div>
+    <div id="legend" class="chips"></div>
+    <div id="mapinfo" class="mut small"></div>
+    <div id="detail" class="hidden"></div>
+  </div>
+
+  <aside id="stream">
+    <div class="stream-head">
+      <div class="sh-top"><span id="streamCount" class="mut small"></span><span id="newCount" class="mut small"></span></div>
+      <canvas id="spark" width="352" height="34"></canvas>
+    </div>
+    <div id="events"></div>
+  </aside>
+</main>
+
+<div id="toast"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

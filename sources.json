@@ -1,0 +1,342 @@
+{
+  "$comment": "数据源清单。加一个源 = 在这里加一条 + 在 src/adapters/ 里导出一个同名函数。前端能力面板由这里驱动，不用改 UI。全部条目为 2026-09 实测可用。",
+  "groups": {
+    "natural": "灾害 / 气候 / 空间天气",
+    "aviation": "航空 / 空域",
+    "news": "新闻事件（结构化）",
+    "economy": "经济 / 市场",
+    "sanctions": "制裁 / 治理",
+    "conflict": "冲突（需注册密钥）"
+  },
+  "sources": [
+    {
+      "id": "usgs_quakes",
+      "adapter": "usgs_quakes",
+      "group": "natural",
+      "label": "USGS 全球地震 M2.5+",
+      "kind": "disaster",
+      "points": true,
+      "series": true,
+      "interval": 300,
+      "license": "public domain",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
+      "note": "同一入口还有 all_hour / 4.5_week / significant_month 等切片，改 url 即可。",
+      "keep_days": 30
+    },
+    {
+      "id": "usgs_major",
+      "adapter": "usgs_quakes",
+      "group": "natural",
+      "label": "USGS 显著地震（本月）",
+      "kind": "disaster",
+      "points": true,
+      "interval": 3600,
+      "license": "public domain",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson",
+      "keep_days": 120
+    },
+    {
+      "id": "nasa_eonet",
+      "adapter": "eonet",
+      "group": "natural",
+      "label": "NASA EONET 自然灾害",
+      "kind": "disaster",
+      "points": true,
+      "interval": 3600,
+      "license": "NASA open",
+      "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=250",
+      "keep_days": 60
+    },
+    {
+      "id": "noaa_spacewx",
+      "adapter": "swpc_spacewx",
+      "group": "natural",
+      "label": "NOAA 空间天气（耀斑 / Kp）",
+      "kind": "spacewx",
+      "points": false,
+      "series": true,
+      "interval": 900,
+      "license": "public domain",
+      "url": "https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json",
+      "note": "M 级以上耀斑与 Kp>=6 才产出事件；其余时候返回『太阳平静』并注明原因。影响卫星通信与 GPS。",
+      "keep_days": 30
+    },
+    {
+      "id": "metno_hazard",
+      "adapter": "metno_sweep",
+      "group": "natural",
+      "label": "MET Norway 极端天气（28 城）",
+      "kind": "weather",
+      "points": true,
+      "interval": 3600,
+      "license": "CC BY 4.0 (Norwegian Meteorological Institute)",
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/compact",
+      "note": "必须带标识性 User-Agent；坑：UA 里出现 email 字样（如 contact: you@example.com）会被 403，换成 URL 形式才通。改 src/adapters/natural.mjs 里的 CITIES 就是改关注区。",
+      "keep_days": 14
+    },
+    {
+      "id": "opensky_eu",
+      "adapter": "opensky",
+      "group": "aviation",
+      "label": "OpenSky 欧洲空域",
+      "kind": "aircraft",
+      "points": true,
+      "series": true,
+      "interval": 900,
+      "license": "OPEN（匿名可调，限额低）",
+      "url": "https://opensky-network.org/api/states/all",
+      "regions": [
+        {
+          "name": "欧洲",
+          "bbox": [
+            -12,
+            40,
+            35,
+            62
+          ]
+        }
+      ],
+      "dense_min": 25,
+      "note": "产出两类东西：2°×2° 网格的在飞架次（密度异常）+ 命中前缀清单的军机/政府机。注册免费 client_id 后额度大幅提高，见 .env.example。",
+      "keep_days": 3
+    },
+    {
+      "id": "opensky_eastmed",
+      "adapter": "opensky",
+      "group": "aviation",
+      "label": "OpenSky 东地中海",
+      "kind": "aircraft",
+      "points": true,
+      "interval": 900,
+      "license": "OPEN",
+      "url": "https://opensky-network.org/api/states/all",
+      "regions": [
+        {
+          "name": "东地中海",
+          "bbox": [
+            14,
+            30,
+            42,
+            42
+          ]
+        }
+      ],
+      "dense_min": 20,
+      "keep_days": 3
+    },
+    {
+      "id": "opensky_eastasia",
+      "adapter": "opensky",
+      "group": "aviation",
+      "label": "OpenSky 东亚",
+      "kind": "aircraft",
+      "points": true,
+      "interval": 900,
+      "license": "OPEN",
+      "url": "https://opensky-network.org/api/states/all",
+      "regions": [
+        {
+          "name": "东亚",
+          "bbox": [
+            100,
+            18,
+            145,
+            46
+          ]
+        }
+      ],
+      "dense_min": 30,
+      "keep_days": 3
+    },
+    {
+      "id": "gdelt_events",
+      "adapter": "gdelt_events",
+      "group": "news",
+      "label": "GDELT 事件表（自带坐标）",
+      "kind": "news",
+      "points": true,
+      "series": true,
+      "interval": 900,
+      "license": "open, attribution required",
+      "index_url": "http://data.gdeltproject.org/gdeltv2/lastupdate.txt",
+      "min_articles": 10,
+      "note": "免费源里唯一「全球+逐事件+带经纬度+每15分钟」的结构化冲突/抗议数据。一个分片上千行，min_articles 是入库闸门。",
+      "keep_days": 5
+    },
+    {
+      "id": "gdelt_timeline",
+      "adapter": "gdelt_timeline",
+      "group": "news",
+      "label": "GDELT 报道量时间线",
+      "kind": "signal",
+      "points": false,
+      "series": true,
+      "interval": 1800,
+      "license": "open, attribution required",
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+      "timespan": "24h",
+      "span": "1h",
+      "queries": [
+        {
+          "tag": "台海",
+          "q": "taiwan strait (exercise OR incursion OR patrol OR aircraft)"
+        },
+        {
+          "tag": "红海",
+          "q": "red sea (houthi OR missile OR shipping OR attack)"
+        },
+        {
+          "tag": "乌克兰",
+          "q": "ukraine (energy OR drone OR front OR strike)"
+        },
+        {
+          "tag": "霍尔木兹",
+          "q": "hormuz (tanker OR iran OR blockade OR navy)"
+        },
+        {
+          "tag": "南海",
+          "q": "south china sea (coast guard OR water cannon OR vessel)"
+        },
+        {
+          "tag": "制裁",
+          "q": "sanctions (semiconductor OR treasury OR shipment OR bank)"
+        },
+        {
+          "tag": "朝鲜",
+          "q": "north korea (missile OR launch OR weapons)"
+        },
+        {
+          "tag": "伊朗",
+          "q": "iran (nuclear OR isfahan OR irgc OR strike)"
+        }
+      ],
+      "note": "报道量比值 = 最便宜的升温探测器。查询语法：空格即 AND，OR 列表必须整体加括号（`red sea OR gulf` 会被拒）。限速 1 请求/5 秒，本适配器实际用 10 秒间隔。",
+      "keep_days": 14
+    },
+    {
+      "id": "gdelt_docs",
+      "adapter": "gdelt_doc",
+      "group": "news",
+      "label": "GDELT 定向文章流",
+      "kind": "news",
+      "points": false,
+      "interval": 3600,
+      "license": "open, attribution required",
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+      "timespan": "2h",
+      "maxrecords": 20,
+      "queries": [
+        {
+          "tag": "马六甲",
+          "q": "malacca (strait OR shipping OR piracy)"
+        },
+        {
+          "tag": "禁飞",
+          "q": "(\"airspace closed\" OR \"no fly zone\" OR \"closed its airspace\")"
+        }
+      ],
+      "note": "无坐标，只进事件流。想按主题读原文时用。注意：词里带连字符（no-fly）必须整体加引号，否则 GDELT 回一句 illegal character。",
+      "keep_days": 14
+    },
+    {
+      "id": "coingecko",
+      "adapter": "coingecko",
+      "group": "economy",
+      "label": "加密资产 24h 异动",
+      "kind": "market",
+      "points": false,
+      "series": true,
+      "interval": 300,
+      "license": "free tier, attribution required",
+      "url": "https://api.coingecko.com/api/v3/coins/markets",
+      "note": "免费档限速严，别当行情主源。只保留 |24h%|>=3 的作为事件。",
+      "keep_days": 2
+    },
+    {
+      "id": "worldbank_macro",
+      "adapter": "worldbank",
+      "group": "economy",
+      "label": "世行宏观指标",
+      "kind": "macro",
+      "points": false,
+      "interval": 86400,
+      "license": "CC BY 4.0",
+      "url": "https://api.worldbank.org/v2",
+      "note": "无 key。年度更新，价值不在实时，而是给地图铺一层可对质的基本面底色。",
+      "keep_days": 400
+    },
+    {
+      "id": "un_comtrade",
+      "adapter": "comtrade",
+      "group": "economy",
+      "label": "UN Comtrade 贸易流",
+      "kind": "trade",
+      "points": false,
+      "interval": 86400,
+      "license": "UN open；preview 端点免 key（有额度限制）",
+      "url": "https://comtradeapi.un.org/public/v1/preview/C/A/HS",
+      "note": "别加 customsCode/motCode 参数，加了会被判 Invalid parameter value。",
+      "keep_days": 400
+    },
+    {
+      "id": "ofac_sdn",
+      "adapter": "ofac",
+      "group": "sanctions",
+      "label": "OFAC SDN 名单变化",
+      "kind": "sanctions",
+      "points": false,
+      "interval": 86400,
+      "license": "US government public",
+      "url": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.xml",
+      "note": "全量约 29MB。做法是拉一次算指纹，只有名单真变了才产出一条事件 —— 不然每天白吞 29MB。",
+      "keep_days": 120
+    },
+    {
+      "id": "opensanctions",
+      "adapter": "opensanctions",
+      "group": "sanctions",
+      "label": "OpenSanctions 名单更新",
+      "kind": "sanctions",
+      "points": false,
+      "interval": 21600,
+      "license": "MIT / 各源自有",
+      "url": "https://data.opensanctions.org/datasets/latest/index.json",
+      "note": "聚合 400+ 制裁/PEP/黑名单，只读元数据，轻量。",
+      "keep_days": 60
+    },
+    {
+      "id": "acled",
+      "adapter": "acled",
+      "group": "conflict",
+      "label": "ACLED 武装冲突事件",
+      "kind": "conflict",
+      "points": true,
+      "interval": 86400,
+      "needs_key": "ACLED_EMAIL,ACLED_PASSWORD",
+      "license": "非商用免费注册；禁止再分发 → 只能本地用"
+    },
+    {
+      "id": "ucdp",
+      "adapter": "ucdp",
+      "group": "conflict",
+      "label": "UCDP 冲突数据",
+      "kind": "conflict",
+      "points": true,
+      "interval": 86400,
+      "needs_key": "UCDP_TOKEN",
+      "license": "研究用途免费 token"
+    },
+    {
+      "id": "aisstream",
+      "adapter": "aisstream_ws",
+      "group": "aviation",
+      "label": "AIS 船舶位置（WebSocket）",
+      "kind": "vessel",
+      "points": true,
+      "interval": 0,
+      "needs_key": "AISSTREAM_KEY",
+      "license": "免费注册 key；禁止存储衍生数据",
+      "note": "非轮询源，registry 会标记为「非轮询源」并跳过。真需要船舶密度就用 PortWatch / 每日 AIS 快照，别存原始流。"
+    }
+  ]
+}

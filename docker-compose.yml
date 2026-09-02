@@ -1,0 +1,13 @@
+services:
+  intelmap:
+    build: .
+    ports:
+      - "127.0.0.1:8787:8787"     # 只绑回环；要远程访问请走 Tailscale / SSH 隧道
+    env_file: [.env]
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8787"
+    volumes:
+      - ./data:/app/data          # 事件库与采集状态，重建容器不丢历史
+    restart: unless-stopped
+    init: true

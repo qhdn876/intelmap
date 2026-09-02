@@ -1,0 +1,20 @@
+{
+  "name": "intelmap",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "个人用全球态势看板：多数据源、延迟透明、零 AI、零框架、零运行时依赖",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node --no-warnings src/server.mjs",
+    "dev": "node --no-warnings --watch src/server.mjs",
+    "refresh": "node --no-warnings src/refresh.mjs",
+    "ais": "node --no-warnings src/adapters/stream.mjs --serve",
+    "verify": "node --no-warnings scripts/verify-sources.mjs",
+    "smoke": "node --no-warnings scripts/smoke.mjs",
+    "check": "node --no-warnings scripts/check-dom.mjs",
+    "render": "node --no-warnings scripts/render-check.mjs",
+    "test": "npm run check && npm run smoke && npm run render"
+  },
+  "license": "MIT"
+}
