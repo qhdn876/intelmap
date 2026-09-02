@@ -7,7 +7,7 @@
 | worldmonitor | intelmap |
 |---|---|
 | 272 个环境变量、228 个 API 路径 | 一个 `sources.json`，键可选填 |
-| 6 站点变体 + Tauri + MCP + 4 个 SDK | 一个静态页 + 一个 JSON API |
+| 6 站点变体 + Tauri + MCP + 4 个 SDK | 一个静态页 + 一个 JSON API + 一个 MCP 端点 |
 | LLM 合成摘要 / 预测 / CII 指数 | 不做任何推断；只给计数、异常检测、原始链 |
 | AGPL 服务端 + 商业授权双轨 | MIT |
 | 不标数据新鲜度 | **过期源自动灰显并标注 last-run 时间**（核心差异） |
@@ -25,10 +25,11 @@ adapters/*.mjs ─┘                   │
 
 - **registry**（`src/registry.mjs`）：加载 `sources.json` + `src/adapters/*.mjs`，自描述能力（kind、更新周期、是否需 key、是否带经纬度）。前端的能力面板由它驱动 —— 加一个源不用改 UI。
 - **ingest**：统一 envelope（见下），负责去重、TTL、抓取日志、错误退避。
-- **api**：4 个只读端点。
+- **api**：6 个端点 + 1 个 MCP 端点（`/mcp`，JSON-RPC 2.0，供 AI 客户端查询）。
 - **存储**（`src/store.mjs`）：按 kind/入库日 切分的 JSONL + 内存索引。个人规模（每天几千条）下这比数据库省心：`grep` 就能查，坏了删一天重跑。要换 SQLite/DuckDB 只需改这一个文件，接口只有 4 个方法。
 
 - **web**：MapLibre 底图 + 一个自绘 canvas 叠加层。**没有 React/Vue/deck.gl**。
+- **MCP**（`src/mcp.mjs`）：5 个工具（query_events / get_source_health / get_timeline / list_sources / get_stats），零 AI 原则不变——只给结构化数据，不做推断。
 
 ## envelope
 

@@ -1,153 +1,13 @@
 {
-  "$comment": "数据源清单。加一个源 = 在这里加一条 + 在 src/adapters/ 里导出一个同名函数。前端能力面板由这里驱动，不用改 UI。全部条目为 2026-09 实测可用。",
+  "$comment": "数据源清单。加一个源 = 在这里加一条 + 在 src/adapters/ 里导出一个同名函数。前端能力面板由这里驱动，不用改 UI。",
   "groups": {
-    "natural": "灾害 / 气候 / 空间天气",
-    "aviation": "航空 / 空域",
     "news": "新闻事件（结构化）",
     "economy": "经济 / 市场",
     "sanctions": "制裁 / 治理",
-    "conflict": "冲突（需注册密钥）"
+    "opinion": "舆论 / 热搜",
+    "macro": "宏观经济"
   },
   "sources": [
-    {
-      "id": "usgs_quakes",
-      "adapter": "usgs_quakes",
-      "group": "natural",
-      "label": "USGS 全球地震 M2.5+",
-      "kind": "disaster",
-      "points": true,
-      "series": true,
-      "interval": 300,
-      "license": "public domain",
-      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
-      "note": "同一入口还有 all_hour / 4.5_week / significant_month 等切片，改 url 即可。",
-      "keep_days": 30
-    },
-    {
-      "id": "usgs_major",
-      "adapter": "usgs_quakes",
-      "group": "natural",
-      "label": "USGS 显著地震（本月）",
-      "kind": "disaster",
-      "points": true,
-      "interval": 3600,
-      "license": "public domain",
-      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson",
-      "keep_days": 120
-    },
-    {
-      "id": "nasa_eonet",
-      "adapter": "eonet",
-      "group": "natural",
-      "label": "NASA EONET 自然灾害",
-      "kind": "disaster",
-      "points": true,
-      "interval": 3600,
-      "license": "NASA open",
-      "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=250",
-      "keep_days": 60
-    },
-    {
-      "id": "noaa_spacewx",
-      "adapter": "swpc_spacewx",
-      "group": "natural",
-      "label": "NOAA 空间天气（耀斑 / Kp）",
-      "kind": "spacewx",
-      "points": false,
-      "series": true,
-      "interval": 900,
-      "license": "public domain",
-      "url": "https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json",
-      "note": "M 级以上耀斑与 Kp>=6 才产出事件；其余时候返回『太阳平静』并注明原因。影响卫星通信与 GPS。",
-      "keep_days": 30
-    },
-    {
-      "id": "metno_hazard",
-      "adapter": "metno_sweep",
-      "group": "natural",
-      "label": "MET Norway 极端天气（28 城）",
-      "kind": "weather",
-      "points": true,
-      "interval": 3600,
-      "license": "CC BY 4.0 (Norwegian Meteorological Institute)",
-      "url": "https://api.met.no/weatherapi/locationforecast/2.0/compact",
-      "note": "必须带标识性 User-Agent；坑：UA 里出现 email 字样（如 contact: you@example.com）会被 403，换成 URL 形式才通。改 src/adapters/natural.mjs 里的 CITIES 就是改关注区。",
-      "keep_days": 14
-    },
-    {
-      "id": "opensky_eu",
-      "adapter": "opensky",
-      "group": "aviation",
-      "label": "OpenSky 欧洲空域",
-      "kind": "aircraft",
-      "points": true,
-      "series": true,
-      "interval": 900,
-      "license": "OPEN（匿名可调，限额低）",
-      "url": "https://opensky-network.org/api/states/all",
-      "regions": [
-        {
-          "name": "欧洲",
-          "bbox": [
-            -12,
-            40,
-            35,
-            62
-          ]
-        }
-      ],
-      "dense_min": 25,
-      "note": "产出两类东西：2°×2° 网格的在飞架次（密度异常）+ 命中前缀清单的军机/政府机。注册免费 client_id 后额度大幅提高，见 .env.example。",
-      "keep_days": 3
-    },
-    {
-      "id": "opensky_eastmed",
-      "adapter": "opensky",
-      "group": "aviation",
-      "label": "OpenSky 东地中海",
-      "kind": "aircraft",
-      "points": true,
-      "interval": 900,
-      "license": "OPEN",
-      "url": "https://opensky-network.org/api/states/all",
-      "regions": [
-        {
-          "name": "东地中海",
-          "bbox": [
-            14,
-            30,
-            42,
-            42
-          ]
-        }
-      ],
-      "dense_min": 20,
-      "keep_days": 3
-    },
-    {
-      "id": "opensky_eastasia",
-      "adapter": "opensky",
-      "group": "aviation",
-      "label": "OpenSky 东亚",
-      "kind": "aircraft",
-      "points": true,
-      "interval": 900,
-      "license": "OPEN",
-      "url": "https://opensky-network.org/api/states/all",
-      "regions": [
-        {
-          "name": "东亚",
-          "bbox": [
-            100,
-            18,
-            145,
-            46
-          ]
-        }
-      ],
-      "dense_min": 30,
-      "keep_days": 3
-    },
     {
       "id": "gdelt_events",
       "adapter": "gdelt_events",
@@ -208,9 +68,17 @@
         {
           "tag": "伊朗",
           "q": "iran (nuclear OR isfahan OR irgc OR strike)"
+        },
+        {
+          "tag": "中美贸易",
+          "q": "china (tariff OR trade OR export OR import OR commerce)"
+        },
+        {
+          "tag": "美联储",
+          "q": "federal reserve (rate OR inflation OR Powell OR FOMC)"
         }
       ],
-      "note": "报道量比值 = 最便宜的升温探测器。查询语法：空格即 AND，OR 列表必须整体加括号（`red sea OR gulf` 会被拒）。限速 1 请求/5 秒，本适配器实际用 10 秒间隔。",
+      "note": "报道量比值 = 最便宜的升温探测器。查询语法：空格即 AND，OR 列表必须整体加括号。限速 1 请求/5 秒，本适配器实际用 10 秒间隔。",
       "keep_days": 14
     },
     {
@@ -233,29 +101,19 @@
         {
           "tag": "禁飞",
           "q": "(\"airspace closed\" OR \"no fly zone\" OR \"closed its airspace\")"
+        },
+        {
+          "tag": "中美经贸",
+          "q": "(china OR chinese) (tariff OR trade OR export OR import) (united states OR washington)"
         }
       ],
-      "note": "无坐标，只进事件流。想按主题读原文时用。注意：词里带连字符（no-fly）必须整体加引号，否则 GDELT 回一句 illegal character。",
+      "note": "无坐标，只进事件流。想按主题读原文时用。注意：词里带连字符必须整体加引号。",
       "keep_days": 14
-    },
-    {
-      "id": "coingecko",
-      "adapter": "coingecko",
-      "group": "economy",
-      "label": "加密资产 24h 异动",
-      "kind": "market",
-      "points": false,
-      "series": true,
-      "interval": 300,
-      "license": "free tier, attribution required",
-      "url": "https://api.coingecko.com/api/v3/coins/markets",
-      "note": "免费档限速严，别当行情主源。只保留 |24h%|>=3 的作为事件。",
-      "keep_days": 2
     },
     {
       "id": "worldbank_macro",
       "adapter": "worldbank",
-      "group": "economy",
+      "group": "macro",
       "label": "世行宏观指标",
       "kind": "macro",
       "points": false,
@@ -268,7 +126,7 @@
     {
       "id": "un_comtrade",
       "adapter": "comtrade",
-      "group": "economy",
+      "group": "macro",
       "label": "UN Comtrade 贸易流",
       "kind": "trade",
       "points": false,
@@ -288,7 +146,7 @@
       "interval": 86400,
       "license": "US government public",
       "url": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.xml",
-      "note": "全量约 29MB。做法是拉一次算指纹，只有名单真变了才产出一条事件 —— 不然每天白吞 29MB。",
+      "note": "全量约 29MB。做法是拉一次算指纹，只有名单真变了才产出一条事件。",
       "keep_days": 120
     },
     {
@@ -305,38 +163,136 @@
       "keep_days": 60
     },
     {
-      "id": "acled",
-      "adapter": "acled",
-      "group": "conflict",
-      "label": "ACLED 武装冲突事件",
-      "kind": "conflict",
-      "points": true,
-      "interval": 86400,
-      "needs_key": "ACLED_EMAIL,ACLED_PASSWORD",
-      "license": "非商用免费注册；禁止再分发 → 只能本地用"
+      "id": "wallstreetcn_hot",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "华尔街见闻热榜",
+      "kind": "market",
+      "points": false,
+      "series": true,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/wallstreetcn/hot",
+      "tags": ["华尔街见闻", "热榜"],
+      "weight": 1.5,
+      "keep_days": 7,
+      "note": "RSSHub 路由，需要 RSSHub 实例运行中"
     },
     {
-      "id": "ucdp",
-      "adapter": "ucdp",
-      "group": "conflict",
-      "label": "UCDP 冲突数据",
-      "kind": "conflict",
-      "points": true,
-      "interval": 86400,
-      "needs_key": "UCDP_TOKEN",
-      "license": "研究用途免费 token"
+      "id": "wallstreetcn_news",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "华尔街见闻快讯",
+      "kind": "market",
+      "points": false,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/wallstreetcn/news",
+      "tags": ["华尔街见闻", "快讯"],
+      "weight": 1.2,
+      "keep_days": 7
     },
     {
-      "id": "aisstream",
-      "adapter": "aisstream_ws",
-      "group": "aviation",
-      "label": "AIS 船舶位置（WebSocket）",
-      "kind": "vessel",
-      "points": true,
-      "interval": 0,
-      "needs_key": "AISSTREAM_KEY",
-      "license": "免费注册 key；禁止存储衍生数据",
-      "note": "非轮询源，registry 会标记为「非轮询源」并跳过。真需要船舶密度就用 PortWatch / 每日 AIS 快照，别存原始流。"
+      "id": "caixin_finance",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "财新金融监管",
+      "kind": "macro",
+      "points": false,
+      "interval": 3600,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/caixin/finance/regulation",
+      "tags": ["财新", "监管"],
+      "keep_days": 14,
+      "note": "财新部分内容付费墙，RSS 只给标题和摘要"
+    },
+    {
+      "id": "caixin_economy",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "财新经济",
+      "kind": "macro",
+      "points": false,
+      "interval": 3600,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/caixin/economy",
+      "tags": ["财新", "经济"],
+      "keep_days": 14
+    },
+    {
+      "id": "weibo_hot",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "微博热搜",
+      "kind": "news",
+      "points": false,
+      "series": true,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/weibo/search/hot",
+      "tags": ["微博", "热搜"],
+      "weight": 1.5,
+      "keep_days": 7,
+      "note": "中文舆情温度计"
+    },
+    {
+      "id": "zhihu_hot",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "知乎热榜",
+      "kind": "news",
+      "points": false,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/zhihu/hotlist",
+      "tags": ["知乎", "热榜"],
+      "keep_days": 7,
+      "note": "精英舆论场"
+    },
+    {
+      "id": "baidu_hot",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "百度热搜",
+      "kind": "news",
+      "points": false,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/baidu/top",
+      "tags": ["百度", "热搜"],
+      "keep_days": 7,
+      "note": "搜索行为反映的关注度"
+    },
+    {
+      "id": "fred_macro",
+      "adapter": "fred",
+      "group": "macro",
+      "label": "FRED 美联储数据",
+      "kind": "macro",
+      "points": false,
+      "interval": 21600,
+      "license": "FRED API Terms",
+      "needs_key": "FRED_KEY",
+      "url": "https://api.stlouisfed.org/fred/series/observations",
+      "series": ["FEDFUNDS", "CPIAUCSL", "UNRATE", "DGS10", "DEXCHUS"],
+      "note": "联邦基金利率 / CPI / 失业率 / 10年国债 / 人民币汇率。免费 key 到 https://fred.stlouisfed.org 申请",
+      "keep_days": 90,
+      "disabled_note": "TODO: 申请 FRED_KEY 后启用"
+    },
+    {
+      "id": "twitter_osint",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "Twitter 关注账号",
+      "kind": "news",
+      "points": false,
+      "interval": 3600,
+      "license": "via RSSHub + Twitter cookie",
+      "url": "http://localhost:1200/twitter/user/USERNAME",
+      "tags": ["twitter"],
+      "keep_days": 7,
+      "note": "需要 RSSHub 配置 TWITTER_AUTH_TOKEN。把 USERNAME 换成实际账号，多账号加多条",
+      "disabled_note": "TODO: 配置 Twitter cookie 后启用"
     }
   ]
 }

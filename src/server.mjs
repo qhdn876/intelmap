@@ -12,15 +12,22 @@ import { store } from './store.mjs';
 import { runCycle, loop, nextWake } from './ingest.mjs';
 import { KINDS } from './envelope.mjs';
 import { stats as httpStats } from './http.mjs';
+import { createMcpHandler } from './mcp.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '127.0.0.1';
 const WEB = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'web');
 const STARTED = Date.now();
 
+// Basic Auth：设了 INTELMAP_AUTH 就启用，不设就开放（本地用）
+const AUTH = process.env.INTELMAP_AUTH;  // 格式 "user:password"
+const AUTH_HEADER = AUTH ? 'Basic ' + Buffer.from(AUTH).toString('base64') : null;
+
 const registry = loadRegistry();
 store.setRetention(registry.retention);
 store.warm();
+
+const handleMcp = createMcpHandler({ store, registry, KINDS });
 
 const list = (v) => (v ? v.split(',').map(s => s.trim()).filter(Boolean) : null);
 const box = (v) => { const a = list(v)?.map(Number); return a?.length === 4 && a.every(Number.isFinite) ? a : null };
@@ -29,6 +36,16 @@ const csvCell = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
 const MIME = { '.html': 'text/html; charset=utf8', '.js': 'text/javascript; charset=utf8',
   '.css': 'text/css; charset=utf8', '.json': 'application/json', '.svg': 'image/svg+xml',
   '.png': 'image/png', '.ico': 'image/x-icon' };
+
+// 读 POST body 的辅助函数
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
 
 // 每个 handler 只返回数据：{ json } 或 { csv, name }。写响应由外层负责。
 let refreshInFlight = false, refreshStartedAt = 0;
@@ -69,6 +86,23 @@ const routes = {
     return { csv: head + body, name: `intelmap-${new Date().toISOString().slice(0, 10)}.csv` };
   },
 
+  // MCP (Model Context Protocol) 端点：让 Claude / Cursor 等 AI 客户端查询数据
+  'POST /mcp': async (q, req) => {
+    const body = await readBody(req);
+    let parsed;
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      return { json: { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } } };
+    }
+    const result = await handleMcp(parsed);
+    if (result === null) {
+      // notifications/initialized 等无需响应的消息
+      return { json: null, status: 202 };
+    }
+    return { json: result };
+  },
+
   // 手动抓取：GDELT 一轮要 ~100 秒，同步等待会把界面卡死。
   // 默认后台触发立刻返回，前端下一次轮询自然看到新数据。
   'POST /api/refresh': async (q) => {
@@ -98,6 +132,16 @@ const routes = {
 
 const server = createServer(async (req, res) => {
   const u = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+  // Basic Auth 检查（设了 INTELMAP_AUTH 才启用）
+  if (AUTH_HEADER) {
+    const auth = req.headers.authorization;
+    if (auth !== AUTH_HEADER) {
+      res.writeHead(401, { 'www-authenticate': 'Basic realm="intelmap"' });
+      return res.end('auth required');
+    }
+  }
+
   // 浏览器 60 秒轮询 + 用户随时关页面 → 半路断开很常见。
   // 不在这里兜住，写已结束的响应会把整个进程崩掉。
   res.on('error', () => {});
@@ -105,18 +149,22 @@ const server = createServer(async (req, res) => {
   try {
     const h = routes[`${req.method} ${u.pathname}`];
     if (h) {
-      const out = await h(u.searchParams);
+      const out = await h(u.searchParams, req);
       if (res.writableEnded || res.destroyed) return;
       if (out.csv !== undefined) {
         res.writeHead(200, { 'content-type': 'text/csv; charset=utf8',
           'content-disposition': `attachment; filename="${out.name}"` });
         return res.end(out.csv);
       }
+      if (out.status === 202) {
+        res.writeHead(202, { 'content-type': 'application/json; charset=utf8' });
+        return res.end();
+      }
       res.writeHead(200, { 'content-type': 'application/json; charset=utf8',
         'cache-control': 'no-store', 'access-control-allow-origin': '*' });
       return res.end(JSON.stringify(out.json ?? { ok: true }));
     }
-    if (u.pathname.startsWith('/api/')) {
+    if (u.pathname.startsWith('/api/') || u.pathname === '/mcp') {
       // 路径存在但方法不对时，告诉调用者该用哪个方法 —— 比一句 404 省十分钟
       const samePath = Object.keys(routes).filter(k => k.endsWith(` ${u.pathname}`));
       if (samePath.length) {
@@ -150,6 +198,9 @@ if (process.env.NO_INGEST === '1') {
 
 server.listen(PORT, HOST, () => {
   const on = registry.sources.filter(s => s.runnable).length;
+  const authStatus = AUTH_HEADER ? '已启用 Basic Auth' : '未设鉴权（本地模式）';
   console.log(`\n  intelmap → http://${HOST}:${PORT}`);
-  console.log(`  ${on}/${registry.sources.length} 个源已启用（其余缺密钥或非轮询）\n`);
+  console.log(`  ${on}/${registry.sources.length} 个源已启用（其余缺密钥或非轮询）`);
+  console.log(`  MCP 端点 → http://${HOST}:${PORT}/mcp`);
+  console.log(`  ${authStatus}\n`);
 });

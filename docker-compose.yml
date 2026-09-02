@@ -2,12 +2,24 @@ services:
   intelmap:
     build: .
     ports:
-      - "127.0.0.1:8787:8787"     # 只绑回环；要远程访问请走 Tailscale / SSH 隧道
+      - "127.0.0.1:8787:8787"     # 只绑回环；公网访问请用 Caddy/Nginx 反向代理 + Basic Auth
     env_file: [.env]
     environment:
       HOST: 0.0.0.0
       PORT: "8787"
+      # INTELMAP_AUTH: "user:password"  # 公网部署必须启用
     volumes:
       - ./data:/app/data          # 事件库与采集状态，重建容器不丢历史
     restart: unless-stopped
     init: true
+
+  # RSSHub：华尔街见闻/财新/微博/知乎/百度/Twitter 等 RSS 源依赖
+  # 如果用公共实例或已有实例，注释掉这段
+  rsshub:
+    image: diygod/rsshub:latest
+    ports:
+      - "127.0.0.1:1200:1200"
+    environment:
+      NODE_ENV: production
+      # TWITTER_AUTH_TOKEN: ""    # TODO: Twitter 路由需要，从浏览器 cookie 抓
+    restart: unless-stopped
