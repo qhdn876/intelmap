@@ -49,10 +49,12 @@ README 说 "The app runs with no environment variables" —— 这句是真的�
 ### 1.4 问题三：发布与运维有断点（可验证，非猜测）
 
 - GitHub Releases 最新一条停在 **v2.5.23（2026-03-01）**，而 `package.json` 已是 **2.10.0**、tag 也打到 `v2.10.0`。也就是**六个月没发过正式 release**，但 README 声称桌面二进制"由同一发布流程产出、Stable"。
-- HEAD 那次提交的 check-runs 我抽样了 100 条（共 365 条）：**93 成功 / 7 失败**，其中含 `Railway native deployment health`。
+- HEAD（`a48aaf8a`，09-02 11:15）的 check-runs 我抽样了 100 条（共 129 条）：**42 成功 / 33 skipped / 23 cancelled / 1 失败 / 1 排队**。注意那 23 条 cancelled——一个提交触发 129 个 check run，本身就是信号（见 §1.6）。
 - 它自己的 issue 里有一条：`ops: 132k user-facing 400s over 3 days after the Aug 1 validation deploy raised no alert`。三万次面向用户的错误没触发告警——这是运维成熟度问题，不是代码问题。
-- 代码里有 5 个空文件（0 字节）、若干 `<120B` 的占位模块；巨型单文件不少：`src/styles/main.css` **608KB**、`src/components/DeckGLMap.ts` **341KB**、`scripts/seed-forecasts.mjs` **883KB**、`scripts/ais-relay.cjs` **642KB**。
-- 测试里有相当一部分是 `readFileSync` 读源码字符串再断言字面量存在（例：`tests/511-rate-limit.test.mjs`）。这叫**锁定实现而非验证行为**，是 AI 批量产出测试的典型形态——它会让你无法安全重构，因为改结构必挂测试。
+- 巨型单文件不少：`src/styles/main.css` **608KB**、`src/components/DeckGLMap.ts` **341KB**、`scripts/seed-forecasts.mjs` **883KB**、`scripts/ais-relay.cjs` **642KB**；`docs/` 里还直接躺着 2.8MB 的 OpenAPI 和 2.4MB 的快照 JSON。
+- 测试里有相当一部分是 `readFileSync` 读源码字符串再断言字面量存在（例：`tests/511-rate-limit.test.mjs` 会读 `scripts/ais-relay.cjs` 等文件并检查文本）。这叫**锁定实现而非验证行为**，是 AI 批量产出测试的典型形态——它会让你无法安全重构，因为改结构必挂测试。
+
+（更正一条我早先写错的：我说过它"有 5 个空文件"。实测 0 字节文件只有 2 个，都是 `.gitkeep`，完全正常；53 个 <120B 的文件里绝大多数是 `.npmrc`、`version.rb` 这类合理小配置。**这不是缺陷，我把它从批评列表里划掉。**）
 
 ### 1.5 问题四：增长数据与真实使用量不一致（这条我最不确信，所以把反证也放上）
 
@@ -70,7 +72,7 @@ README 说 "The app runs with no environment variables" —— 这句是真的�
 
 **仍然成立的三个观察：**
 
-1. **曲线近乎线性。** 从 Wayback 存档的 GitHub 页面里提取 star 计数器（脚本 §9 会重跑）：
+1. **曲线近乎线性。** 下表是从 Wayback 存档的 GitHub 页面里 grep star 计数器得到的（选择器 `id="repo-stars-counter-star"`，2026-09-02 抓取）。脚本 §9 会重跑；archive.org 限流时脚本会**记录"不可达"而不是编造数据**：
 
    | 日期 | stars | 与上一点的日均新增 |
    |---|---|---|
@@ -92,7 +94,15 @@ README 说 "The app runs with no environment variables" —— 这句是真的�
 
 3. **开发者侧的实际使用极低。** 官方 CLI（npm 包 `worldmonitor`）最近一周下载 **96 次**，版本还停在 **0.1.3**；PyPI SDK 是 0.1.1。这两个包存在的唯一目的就是被开发者安装——85k star 对应 96 次/周，比值不合理。
 
-4. 抽样最近 48 个 star 账号，**38% 是 2026 年新注册**（vite 25%、playwright 17%），并出现 `wendywallace19955-png`、`aihubworkflow`、`6255711-crypto`、`gjx2026821` 这类 0 仓库账号；`liuyh11` 在 2026-09-02 注册当天同时 fork + star。**这条证据很弱**——真实热点同样会吸引新号——所以我把它和对照组一起放进来，不单独下结论。
+4. **抽样最近 star 的账号年龄**（用 actor id 近似注册时间，避免逐个查用户）：
+
+   | 仓库 | 抽样数 | 2025-12 后注册 | 近 5 周内注册 |
+   |---|---|---|---|
+   | koala73/worldmonitor | 53 | **37.7%** | 20.8% |
+   | vitejs/vite | 75 | 24.0% | 14.7% |
+   | microsoft/playwright | — | 12.6% | — |
+
+   并出现 `wendywallace19955-png`、`aihubworkflow`、`6255711-crypto`、`gjx2026821` 这类 0 仓库账号；`liuyh11` 在 2026-09-02 注册当天同时 fork + star。**这条证据很弱**——真实热点同样会吸引新号——所以我把对照组一起放进来，不单独下结论。
 
 **我的结论**：不能断定它买过量。但"星数"作为可信度信号，在这个项目上**几乎没有信息量**。要看它，看代码、看站点、看 MCP 是否活着，别看 star。
 
@@ -262,12 +272,18 @@ export async function your_feed({ source, log }) {
 ## 9. 复核我的说法
 
 ```bash
-node scripts/probe-upstream.mjs > docs/upstream-evidence.json
+GITHUB_TOKEN=<任意 token> node scripts/probe-upstream.mjs   # 不带 token 只有 60 次/小时，会剩一堆 ERR
+# 产物：docs/upstream-evidence.json（本仓库里已存一份 2026-09-02 的快照）
 ```
 
-它抓：仓库基本面与体量、`.env.example` 键数、release/tag/发布间隔、52 周提交曲线、作者集中度、issue/PR 计数、HEAD 的 CI 成败、npm 周下载、目录树统计、**Wayback 上的 star 曲线**、HN Algolia 投稿记录、近期 star 账号年龄（含 vite/playwright 对照组）。
+它抓：仓库基本面与体量、`.env.example` 键数、release 与 tag 的错配、52 周提交曲线、作者集中度、issue/PR 计数、HEAD 的 CI 成败、npm 周下载、目录树统计（文件数/最大文件/测试数/workflow 数/proto 数）、**Wayback 上的 star 曲线**、HN Algolia 投稿记录、近期 star 账号年龄（含 vite / playwright 对照组）。
 
-结果存在 [`docs/upstream-evidence.json`](docs/upstream-evidence.json)。所有数字都应能由这个脚本重跑出——不能重跑的我就不写进 README。
+三条约定：
+
+1. **所有能自动抓的都进了 JSON**，README 里的数字都应能由它重跑出来。不能重跑的我就不写。
+2. **对照组和数据一起给**。凡是"看起来异常"的指标，都得先跟 vite/playwright 这类仓库比过才敢写——我那条"watcher 太少"的怀疑就是被对照组推翻的。
+3. **取不到就写"取不到"**。archive.org 限流时脚本记 `note`，不会留个空数组假装看过。
+
 
 ## 10. 许可与合规
 

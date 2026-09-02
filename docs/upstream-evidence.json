@@ -1,0 +1,310 @@
+{
+ "probed_at": "2026-09-02T12:15:47.997Z",
+ "subject": "koala73/worldmonitor",
+ "skipped": [],
+ "auth": "token (5000/hr)",
+ "repo_info": {
+  "stars": 85369,
+  "forks": 12864,
+  "subscribers": 495,
+  "open_issues_incl_prs": 294,
+  "created_at": "2026-01-08T17:26:06Z",
+  "pushed_at": "2026-09-02T12:15:04Z",
+  "size_kb": 206585,
+  "license": "AGPL-3.0",
+  "homepage": "https://worldmonitor.app",
+  "topics": [
+   "agent",
+   "ai",
+   "dashboard",
+   "geopolitics",
+   "mcp",
+   "mcp-server",
+   "monitoring",
+   "news",
+   "opensource",
+   "osint",
+   "palantir",
+   "situation"
+  ],
+  "age_days": 236.8,
+  "stars_per_day_avg": 361,
+  "star_per_sub": 172,
+  "fork_per_star": 0.151
+ },
+ "control_repos": {
+  "vitejs/vite": {
+   "stars": 82653,
+   "subscribers": 561,
+   "star_per_sub": 147,
+   "fork_per_star": 0.105
+  },
+  "microsoft/playwright": {
+   "stars": 95522,
+   "subscribers": 610,
+   "star_per_sub": 157,
+   "fork_per_star": 0.067
+  },
+  "shadcn-ui/ui": {
+   "stars": 122778,
+   "subscribers": 429,
+   "star_per_sub": 286,
+   "fork_per_star": 0.082
+  },
+  "openclaw/openclaw": {
+   "stars": 388602,
+   "subscribers": 1753,
+   "star_per_sub": 222,
+   "fork_per_star": 0.21
+  }
+ },
+ "languages": {
+  "TypeScript": 31284016,
+  "JavaScript": 26838581,
+  "CSS": 872162,
+  "HTML": 121138,
+  "Shell": 107517,
+  "Rust": 76158,
+  "Astro": 48459,
+  "Python": 41764,
+  "PLpgSQL": 26535,
+  "Go": 21100,
+  "Ruby": 18102,
+  "Dockerfile": 11660,
+  "Makefile": 7662,
+  "NSIS": 1060
+ },
+ "total_source_bytes": 59475914,
+ "releases": {
+  "listed": 43,
+  "latest_tag": "v2.5.23",
+  "latest_published": "2026-03-01T23:34:08Z"
+ },
+ "latest_tags": [
+  "v2.10.0",
+  "v2.5.23",
+  "v2.5.21"
+ ],
+ "pkg": {
+  "name": "world-monitor",
+  "version": "2.10.0",
+  "deps": 49,
+  "scripts": 171,
+  "license": "AGPL-3.0-only"
+ },
+ "env_example": {
+  "keys": 272,
+  "bytes": 48869
+ },
+ "commits_52wk": {
+  "total": 6280,
+  "weekly_avg": 121,
+  "last4wk": [
+   159,
+   408,
+   99,
+   286
+  ]
+ },
+ "top_contributors": [
+  {
+   "login": "koala73",
+   "commits": 5555
+  },
+  {
+   "login": "SebastienMelki",
+   "commits": 84
+  },
+  {
+   "login": "claude",
+   "commits": 53
+  },
+  {
+   "login": "yzxcj797",
+   "commits": 47
+  },
+  {
+   "login": "NewCoder3294",
+   "commits": 44
+  },
+  {
+   "login": "ayobamiseun",
+   "commits": 35
+  }
+ ],
+ "owner_share_pct_of_52wk": 88.5,
+ "counters": {
+  "pr_total": 5604,
+  "pr_merged": 4987,
+  "pr_open": 68,
+  "issue_open": 226,
+  "issue_closed": 1579
+ },
+ "head_ci": {
+  "sha": "a48aaf8a",
+  "date": "2026-09-02T11:15:11Z",
+  "total_check_runs": 141,
+  "first_100": {
+   "queued/-": 1,
+   "in_progress/-": 2,
+   "completed/cancelled": 26,
+   "completed/success": 42,
+   "completed/skipped": 28,
+   "completed/failure": 1
+  }
+ },
+ "packages": {
+  "npm_cli_downloads_last_week": 96,
+  "npm_cli_version": "0.1.3"
+ },
+ "tree": {
+  "files": 6614,
+  "truncated": false,
+  "biggest_dirs": [
+   {
+    "path": "blog-site/public",
+    "files": 154,
+    "mb": 12.1
+   },
+   {
+    "path": "docs/api",
+    "files": 77,
+    "mb": 7.4
+   },
+   {
+    "path": "src/locales",
+    "files": 43,
+    "mb": 5.1
+   },
+   {
+    "path": "docs/snapshots",
+    "files": 12,
+    "mb": 4.8
+   },
+   {
+    "path": "docs/images",
+    "files": 17,
+    "mb": 4
+   },
+   {
+    "path": "public/textures",
+    "files": 5,
+    "mb": 3.6
+   },
+   {
+    "path": "src/components",
+    "files": 222,
+    "mb": 3.6
+   },
+   {
+    "path": "server/worldmonitor",
+    "files": 351,
+    "mb": 2.5
+   },
+   {
+    "path": "src/services",
+    "files": 284,
+    "mb": 2.4
+   },
+   {
+    "path": "pro-test/src",
+    "files": 91,
+    "mb": 2.3
+   }
+  ],
+  "largest_files": [
+   {
+    "path": "docs/api/worldmonitor.openapi.yaml",
+    "kb": 2784
+   },
+   {
+    "path": "docs/snapshots/chokepoint-transit-2026-07.json",
+    "kb": 2459
+   },
+   {
+    "path": "docs/snapshots/resilience-ranking-2026-08-29.json",
+    "kb": 1769
+   },
+   {
+    "path": "docs/images/new-world-monitor.png",
+    "kb": 1549
+   },
+   {
+    "path": "public/textures/earth-blue-marble.jpg",
+    "kb": 1428
+   },
+   {
+    "path": "public/textures/night-sky.png",
+    "kb": 883
+   }
+  ],
+  "test_files": 2029,
+  "workflows": 42,
+  "proto": 313,
+  "md_and_mdx": 694
+ },
+ "wayback": {
+  "total_snapshots": 0,
+  "sampled": 0,
+  "curve": [],
+  "per_day": [],
+  "note": "web.archive.org 不可达或限流（连接超时）。曲线数据以本仓库早期（2026-09-02）同一选择器抓取的快照为准；重跑若网络通畅会自动补齐。"
+ },
+ "hackernews": {
+  "submissions": 18,
+  "max_points": 6,
+  "total_comments": 7,
+  "window": "2026-03-02 → 2026-06-19",
+  "top": [
+   {
+    "t": "2026-06-19",
+    "title": "WorldMonitor: Real-time global intelligence dashboard",
+    "points": 6,
+    "comments": 0
+   },
+   {
+    "t": "2026-02-19",
+    "title": "Real-time global intelligence dashboard",
+    "points": 4,
+    "comments": 2
+   },
+   {
+    "t": "2026-02-23",
+    "title": "World Monitor – Real-time global intelligence dashboard",
+    "points": 3,
+    "comments": 2
+   },
+   {
+    "t": "2026-04-17",
+    "title": "Worldmonitor: Real-time global intelligence dashboard",
+    "points": 3,
+    "comments": 0
+   },
+   {
+    "t": "2026-03-06",
+    "title": "World Monitor – Real-Time Global Intelligence Dashboard",
+    "points": 3,
+    "comments": 0
+   }
+  ]
+ },
+ "stargazer_account_age": {
+  "note": "id>2.55e8 ≈ 2025-12 后注册；id>3.0e8 ≈ 近 5 周。指标很弱：真实热点同样会吸引新号，只有与对照组比较才有意义。",
+  "calibration_ids_sampled": true,
+  "koala73/worldmonitor": {
+   "sampled": 53,
+   "pct_created_after_2025_12": 37.7,
+   "pct_created_last_5_weeks": 20.8
+  },
+  "vitejs/vite": {
+   "sampled": 75,
+   "pct_created_after_2025_12": 24,
+   "pct_created_last_5_weeks": 14.7
+  },
+  "microsoft/playwright": {
+   "sampled": 95,
+   "pct_created_after_2025_12": 12.6,
+   "pct_created_last_5_weeks": 5.3
+  }
+ }
+}

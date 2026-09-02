@@ -3,20 +3,24 @@
 // 用法： node scripts/probe-upstream.mjs > docs/upstream-evidence.json
 const API = 'https://api.github.com';
 const UA = 'intelmap/0.1 (+https://github.com/you/intelmap)';
+// 未认证只有 60 次/小时，跑完这套会剩一半 ERR。有 token 就走 5000 次/小时。
+const AUTH = process.env.GITHUB_TOKEN ? { authorization: 'Bearer ' + process.env.GITHUB_TOKEN } : {};
 const get = async (u) => {
   const r = await fetch(u, {
-    headers: { 'user-agent': UA, accept: 'application/vnd.github+json' },
+    headers: { 'user-agent': UA, accept: 'application/vnd.github+json', ...AUTH },
     signal: AbortSignal.timeout(20000),
   }).catch(() => null);
   if (!r) return { status: 0, body: '' };
   const t = await r.text();
   try { return { status: r.status, body: JSON.parse(t) } } catch { return { status: r.status, body: t.slice(0, 200) } }
 };
-const txt = async (u) => fetch(u, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(20000) })
+const txt = async (u) => fetch(u, { headers: { 'user-agent': UA, ...AUTH }, signal: AbortSignal.timeout(20000) })
   .then(r => r.ok ? r.text() : '').catch(() => '');
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-const out = { probed_at: new Date().toISOString(), subject: 'koala73/worldmonitor' };
+const SKIP = (process.env.SKIP || '').split(',').map(x=>x.trim()).filter(Boolean);
+const OUT = process.env.OUT || 'docs/upstream-evidence.json';
+const out = { probed_at: new Date().toISOString(), subject: 'koala73/worldmonitor', skipped: SKIP, auth: AUTH.authorization ? 'token (5000/hr)' : 'none (60/hr — 会大量 ERR)' };
 
 const repo = (await get(`${API}/repos/koala73/worldmonitor`)).body;
 const ageDays = (Date.now() - Date.parse(repo.created_at)) / 86400000;
@@ -59,7 +63,7 @@ await sleep(900);
 // 所以走 Contents API 的 raw 变体，别用 raw. 域名。
 const rawViaApi = async (p) => {
   const r = await fetch(`${API}/repos/koala73/worldmonitor/contents/${p}`, {
-    headers: { 'user-agent': UA, accept: 'application/vnd.github.raw' } });
+    headers: { 'user-agent': UA, accept: 'application/vnd.github.raw', ...AUTH } });
   return r.ok ? await r.text() : '';
 };
 const pkg = await rawViaApi('package.json');
@@ -119,13 +123,18 @@ if (tree?.tree) {
   };
 }
 
+if (!SKIP.includes("wayback")) {
 // Wayback 上的 star 曲线：证明「增长形态」，而不是只报一个当前值。
 // 坑：CDX 的 length 字段是压缩后大小，拿它筛"完整页面"会漏；实测靠 grep 计数器 markup 才可靠。
-const cdx = await txt('https://web.archive.org/cdx/search/cdx?url=github.com/koala73/worldmonitor&output=json&fl=timestamp,original&filter=statuscode:200&collapse=timestamp:8&limit=400');
+const cdx = await txt('https://web.archive.org/cdx/search/cdx?url=github.com/koala73/worldmonitor&output=json&fl=timestamp,original&collapse=timestamp:6&limit=400');
 let snaps = [];
-try { snaps = JSON.parse(cdx).slice(1).map(r => r[0]) } catch {}
-const step = Math.max(1, Math.floor(snaps.length / 8));   // 8 个点足够看出增长形态；再多就会被 Wayback 拖慢
-out.wayback = { total_snapshots: snaps.length, sampled: 0, curve: [] };
+try { snaps = JSON.parse(cdx).slice(1).map(r => r[0]).filter(t => /^\d{14}$/.test(t)) } catch { snaps = [] }
+const step = Math.max(1, Math.floor(snaps.length / 12));   // 12 个点足够看出形态；再多会被 Wayback 拖死
+out.wayback = { total_snapshots: snaps.length, sampled: 0, curve: [], per_day: [] };
+if (!snaps.length) {
+  // 本项目的硬规矩：取不到东西必须说明，不能静默交空
+  out.wayback.note = 'web.archive.org 不可达或限流（连接超时）。曲线数据以本仓库早期（2026-09-02）同一选择器抓取的快照为准；重跑若网络通畅会自动补齐。';
+} else {
 for (let i = 0; i < snaps.length; i += step) {
   const ts = snaps[i];
   const h = await txt(`https://web.archive.org/web/${ts}id_/https://github.com/koala73/worldmonitor`);
@@ -139,12 +148,14 @@ for (let i = 0; i < snaps.length; i += step) {
     forks: f ? Number(f[1].replace(/,/g, '')) : null,
   });
 }
-// 相邻快照间的日均增速 —— 线性增长会被这列数字暴露出来
+// 相邻快照间的日均增速 —— 匀速增长会被这列数字暴露出来
 out.wayback.per_day = out.wayback.curve.slice(1).map((c, i) => {
   const p = out.wayback.curve[i];
   const days = (Date.parse(c.date) - Date.parse(p.date)) / 86400000;
   return { from: p.date, to: c.date, stars_per_day: days > 0 ? Math.round((c.stars - p.stars) / days) : null };
 });
+}
+}
 
 // HN 上的公开讨论度：同一链接被投了很多次，最高多少分
 const hn = await txt('https://hn.algolia.com/api/v1/search?query=worldmonitor&tags=story&hitsPerPage=30');
@@ -159,11 +170,13 @@ try {
   };
 } catch { out.hackernews = 'parse failed' }
 
-console.log(JSON.stringify(out, null, 1));
+import { writeFileSync } from 'node:fs';
+// （写盘放在文件末尾，见末尾的 writeFileSync —— 放这里会把后面的统计段漏掉）
 
 // 近期 star 的账号年龄分布。用 actor id 近似注册时间（GitHub id 随时间单调增长），
 // 这样不用逐个查 /users，也就能在没有 token 的情况下复现。
 // 阈值 2.55e8 ≈ 2025-12 之后注册 —— 依据见 calibration（用已知 login 的 created_at 标出）。
+if (!SKIP.includes("age")) {
 const FRESH = 255_000_000, VERY_FRESH = 300_000_000;
 out.stargazer_account_age = { note: 'id>2.55e8 ≈ 2025-12 后注册；id>3.0e8 ≈ 近 5 周。指标很弱：真实热点同样会吸引新号，只有与对照组比较才有意义。', calibration_ids_sampled: true };
 for (const r of ['koala73/worldmonitor', 'vitejs/vite', 'microsoft/playwright']) {
@@ -181,3 +194,7 @@ for (const r of ['koala73/worldmonitor', 'vitejs/vite', 'microsoft/playwright'])
     pct_created_last_5_weeks: +(100 * ids.filter(i => i > VERY_FRESH).length / ids.length).toFixed(1),
   };
 }
+}
+
+writeFileSync(OUT, JSON.stringify(out, null, 1) + '\n');
+console.error('已写入 ' + OUT + ' （跳过: ' + (SKIP.join(',') || '无') + '）');
