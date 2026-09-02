@@ -1,0 +1,298 @@
+{
+  "$comment": "数据源清单。加一个源 = 在这里加一条 + 在 src/adapters/ 里导出一个同名函数。前端能力面板由这里驱动，不用改 UI。",
+  "groups": {
+    "news": "新闻事件（结构化）",
+    "economy": "经济 / 市场",
+    "sanctions": "制裁 / 治理",
+    "opinion": "舆论 / 热搜",
+    "macro": "宏观经济"
+  },
+  "sources": [
+    {
+      "id": "gdelt_events",
+      "adapter": "gdelt_events",
+      "group": "news",
+      "label": "GDELT 事件表（自带坐标）",
+      "kind": "news",
+      "points": true,
+      "series": true,
+      "interval": 900,
+      "license": "open, attribution required",
+      "index_url": "http://data.gdeltproject.org/gdeltv2/lastupdate.txt",
+      "min_articles": 10,
+      "note": "免费源里唯一「全球+逐事件+带经纬度+每15分钟」的结构化冲突/抗议数据。一个分片上千行，min_articles 是入库闸门。",
+      "keep_days": 5
+    },
+    {
+      "id": "gdelt_timeline",
+      "adapter": "gdelt_timeline",
+      "group": "news",
+      "label": "GDELT 报道量时间线",
+      "kind": "signal",
+      "points": false,
+      "series": true,
+      "interval": 1800,
+      "license": "open, attribution required",
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+      "timespan": "24h",
+      "span": "1h",
+      "queries": [
+        {
+          "tag": "台海",
+          "q": "taiwan strait (exercise OR incursion OR patrol OR aircraft)"
+        },
+        {
+          "tag": "红海",
+          "q": "red sea (houthi OR missile OR shipping OR attack)"
+        },
+        {
+          "tag": "乌克兰",
+          "q": "ukraine (energy OR drone OR front OR strike)"
+        },
+        {
+          "tag": "霍尔木兹",
+          "q": "hormuz (tanker OR iran OR blockade OR navy)"
+        },
+        {
+          "tag": "南海",
+          "q": "south china sea (coast guard OR water cannon OR vessel)"
+        },
+        {
+          "tag": "制裁",
+          "q": "sanctions (semiconductor OR treasury OR shipment OR bank)"
+        },
+        {
+          "tag": "朝鲜",
+          "q": "north korea (missile OR launch OR weapons)"
+        },
+        {
+          "tag": "伊朗",
+          "q": "iran (nuclear OR isfahan OR irgc OR strike)"
+        },
+        {
+          "tag": "中美贸易",
+          "q": "china (tariff OR trade OR export OR import OR commerce)"
+        },
+        {
+          "tag": "美联储",
+          "q": "federal reserve (rate OR inflation OR Powell OR FOMC)"
+        }
+      ],
+      "note": "报道量比值 = 最便宜的升温探测器。查询语法：空格即 AND，OR 列表必须整体加括号。限速 1 请求/5 秒，本适配器实际用 10 秒间隔。",
+      "keep_days": 14
+    },
+    {
+      "id": "gdelt_docs",
+      "adapter": "gdelt_doc",
+      "group": "news",
+      "label": "GDELT 定向文章流",
+      "kind": "news",
+      "points": false,
+      "interval": 3600,
+      "license": "open, attribution required",
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+      "timespan": "2h",
+      "maxrecords": 20,
+      "queries": [
+        {
+          "tag": "马六甲",
+          "q": "malacca (strait OR shipping OR piracy)"
+        },
+        {
+          "tag": "禁飞",
+          "q": "(\"airspace closed\" OR \"no fly zone\" OR \"closed its airspace\")"
+        },
+        {
+          "tag": "中美经贸",
+          "q": "(china OR chinese) (tariff OR trade OR export OR import) (united states OR washington)"
+        }
+      ],
+      "note": "无坐标，只进事件流。想按主题读原文时用。注意：词里带连字符必须整体加引号。",
+      "keep_days": 14
+    },
+    {
+      "id": "worldbank_macro",
+      "adapter": "worldbank",
+      "group": "macro",
+      "label": "世行宏观指标",
+      "kind": "macro",
+      "points": false,
+      "interval": 86400,
+      "license": "CC BY 4.0",
+      "url": "https://api.worldbank.org/v2",
+      "note": "无 key。年度更新，价值不在实时，而是给地图铺一层可对质的基本面底色。",
+      "keep_days": 400
+    },
+    {
+      "id": "un_comtrade",
+      "adapter": "comtrade",
+      "group": "macro",
+      "label": "UN Comtrade 贸易流",
+      "kind": "trade",
+      "points": false,
+      "interval": 86400,
+      "license": "UN open；preview 端点免 key（有额度限制）",
+      "url": "https://comtradeapi.un.org/public/v1/preview/C/A/HS",
+      "note": "别加 customsCode/motCode 参数，加了会被判 Invalid parameter value。",
+      "keep_days": 400
+    },
+    {
+      "id": "ofac_sdn",
+      "adapter": "ofac",
+      "group": "sanctions",
+      "label": "OFAC SDN 名单变化",
+      "kind": "sanctions",
+      "points": false,
+      "interval": 86400,
+      "license": "US government public",
+      "url": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.xml",
+      "note": "全量约 29MB。做法是拉一次算指纹，只有名单真变了才产出一条事件。",
+      "keep_days": 120
+    },
+    {
+      "id": "opensanctions",
+      "adapter": "opensanctions",
+      "group": "sanctions",
+      "label": "OpenSanctions 名单更新",
+      "kind": "sanctions",
+      "points": false,
+      "interval": 21600,
+      "license": "MIT / 各源自有",
+      "url": "https://data.opensanctions.org/datasets/latest/index.json",
+      "note": "聚合 400+ 制裁/PEP/黑名单，只读元数据，轻量。",
+      "keep_days": 60
+    },
+    {
+      "id": "wallstreetcn_hot",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "华尔街见闻热榜",
+      "kind": "market",
+      "points": false,
+      "series": true,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/wallstreetcn/hot",
+      "tags": ["华尔街见闻", "热榜"],
+      "weight": 1.5,
+      "keep_days": 7,
+      "note": "RSSHub 路由，需要 RSSHub 实例运行中"
+    },
+    {
+      "id": "wallstreetcn_news",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "华尔街见闻快讯",
+      "kind": "market",
+      "points": false,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/wallstreetcn/news",
+      "tags": ["华尔街见闻", "快讯"],
+      "weight": 1.2,
+      "keep_days": 7
+    },
+    {
+      "id": "caixin_finance",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "财新金融监管",
+      "kind": "macro",
+      "points": false,
+      "interval": 3600,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/caixin/finance/regulation",
+      "tags": ["财新", "监管"],
+      "keep_days": 14,
+      "note": "财新部分内容付费墙，RSS 只给标题和摘要"
+    },
+    {
+      "id": "caixin_economy",
+      "adapter": "rss_feed",
+      "group": "economy",
+      "label": "财新经济",
+      "kind": "macro",
+      "points": false,
+      "interval": 3600,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/caixin/economy",
+      "tags": ["财新", "经济"],
+      "keep_days": 14
+    },
+    {
+      "id": "weibo_hot",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "微博热搜",
+      "kind": "news",
+      "points": false,
+      "series": true,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/weibo/search/hot",
+      "tags": ["微博", "热搜"],
+      "weight": 1.5,
+      "keep_days": 7,
+      "note": "中文舆情温度计"
+    },
+    {
+      "id": "zhihu_hot",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "知乎热榜",
+      "kind": "news",
+      "points": false,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/zhihu/hotlist",
+      "tags": ["知乎", "热榜"],
+      "keep_days": 7,
+      "note": "精英舆论场"
+    },
+    {
+      "id": "baidu_hot",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "百度热搜",
+      "kind": "news",
+      "points": false,
+      "interval": 1800,
+      "license": "via RSSHub",
+      "url": "http://localhost:1200/baidu/top",
+      "tags": ["百度", "热搜"],
+      "keep_days": 7,
+      "note": "搜索行为反映的关注度"
+    },
+    {
+      "id": "fred_macro",
+      "adapter": "fred",
+      "group": "macro",
+      "label": "FRED 美联储数据",
+      "kind": "macro",
+      "points": false,
+      "interval": 21600,
+      "license": "FRED API Terms",
+      "needs_key": "FRED_KEY",
+      "url": "https://api.stlouisfed.org/fred/series/observations",
+      "series": ["FEDFUNDS", "CPIAUCSL", "UNRATE", "DGS10", "DEXCHUS"],
+      "note": "联邦基金利率 / CPI / 失业率 / 10年国债 / 人民币汇率。免费 key 到 https://fred.stlouisfed.org 申请",
+      "keep_days": 90,
+      "disabled_note": "TODO: 申请 FRED_KEY 后启用"
+    },
+    {
+      "id": "twitter_osint",
+      "adapter": "rss_feed",
+      "group": "opinion",
+      "label": "Twitter 关注账号",
+      "kind": "news",
+      "points": false,
+      "interval": 3600,
+      "license": "via RSSHub + Twitter cookie",
+      "url": "http://localhost:1200/twitter/user/USERNAME",
+      "tags": ["twitter"],
+      "keep_days": 7,
+      "note": "需要 RSSHub 配置 TWITTER_AUTH_TOKEN。把 USERNAME 换成实际账号，多账号加多条",
+      "disabled_note": "TODO: 配置 Twitter cookie 后启用"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+* { box-sizing: border-box }
+:root {
+  --bg: #0b0e14; --panel: #11161f; --panel2: #0d1219; --line: #1c2531; --line2: #18212c;
+  --fg: #d7e0ea; --mut: #6f8095; --acc: #4cc9f0;
+}
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+  font: 13px/1.55 ui-sans-serif, system-ui, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+.mut { color: var(--mut) } .small { font-size: 11px } .hidden { display: none !important }
+b { font-weight: 600 }
+
+header { height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 12px;
+  background: var(--panel2); border-bottom: 1px solid var(--line); position: relative; z-index: 5 }
+.brand { display: flex; gap: 8px; align-items: baseline; white-space: nowrap }
+.brand b { font-size: 15px; letter-spacing: .3px }
+.ranges { display: flex; gap: 4px }
+#search { flex: 1; max-width: 330px; background: #0a0f16; border: 1px solid var(--line); color: var(--fg);
+  padding: 6px 10px; border-radius: 6px; outline: none; font: inherit }
+#search:focus { border-color: var(--acc) }
+.acts { margin-left: auto; display: flex; align-items: center; gap: 8px }
+.acts a { text-decoration: none }
+button { background: #16202c; color: var(--fg); border: 1px solid var(--line); border-radius: 6px;
+  padding: 5px 9px; cursor: pointer; font: inherit; }
+button:hover { border-color: #2c3d51 }
+button.on { background: #123243; border-color: var(--acc); color: #bfeaff }
+button:disabled { opacity: .5; cursor: default }
+
+main { height: calc(100vh - 46px); display: grid; grid-template-columns: 252px 1fr 372px; }
+aside { background: var(--panel); overflow: hidden; display: flex; flex-direction: column; min-width: 0 }
+#rail { border-right: 1px solid var(--line) }
+#stream { border-left: 1px solid var(--line) }
+.rail-scroll { overflow-y: auto; flex: 1 }
+section { padding: 10px 10px 4px }
+h4 { margin: 0 0 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; color: var(--mut) }
+.rail-foot { border-top: 1px solid var(--line); padding: 7px 10px }
+
+.chips { display: flex; flex-wrap: wrap; gap: 4px }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 7px; line-height: 1.4 }
+.chip .x { opacity: .55; font-weight: 400; margin-left: 2px }
+.chip.on .x { opacity: 1 }
+.watch-add { display: flex; gap: 4px; margin-top: 7px }
+.watch-add input { flex: 1; min-width: 0; background: #0a0f16; border: 1px solid var(--line);
+  color: var(--fg); padding: 4px 7px; border-radius: 5px; font: inherit; outline: none }
+.onlymatch { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--mut); margin: 7px 0 2px }
+.onlymatch input { accent-color: var(--acc); margin: 0 }
+
+.dot, .hdot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: 0 0 auto }
+.grp { font-size: 10px; color: #55677c; text-transform: uppercase; letter-spacing: .07em;
+  margin: 10px 2px 4px; border-bottom: 1px dashed #1a2331; padding-bottom: 2px }
+.src label { display: flex; align-items: center; gap: 6px; padding: 3px 2px; cursor: pointer; border-radius: 4px }
+.src label:hover { background: #141c26 }
+.src input { width: 12px; height: 12px; accent-color: var(--acc); margin: 0; flex: 0 0 auto }
+.src .lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.src .n { font-variant-numeric: tabular-nums; color: var(--mut); font-size: 11px }
+.src.off { opacity: .5 }
+.why { font-size: 10px; color: #8a6a48; padding: 0 0 3px 20px }
+
+.hrow { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 11px; cursor: help }
+.hname { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 10.5px; color: #a8b8c9 }
+.hts { margin-left: auto; color: var(--mut); font-size: 10px; white-space: nowrap }
+.hdot.ok { background: #2a9d5c } .hdot.warn { background: #d9a13b } .hdot.err { background: #e0554d }
+
+#mapwrap { position: relative; overflow: hidden; min-width: 0 }
+#map { position: absolute; inset: 0 }
+#overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2 }
+#legend { position: absolute; left: 10px; top: 10px; z-index: 3; max-width: calc(100% - 20px) }
+#legend .chip { background: rgba(11,14,20,.8); backdrop-filter: blur(3px) }
+#mapinfo { position: absolute; left: 10px; bottom: 10px; z-index: 3; max-width: 60%;
+  background: rgba(11,14,20,.8); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px;
+  pointer-events: none; color: var(--mut) }
+.maplibregl-ctrl-attrib { background: rgba(11,14,20,.72) !important; font-size: 10px }
+.maplibregl-ctrl-attrib a { color: #8ea3ba !important }
+.maplibregl-ctrl-group { background: #16202c !important; border: 1px solid var(--line) !important }
+.maplibregl-ctrl-group button { filter: invert(1) brightness(.9) }
+
+#detail { position: absolute; right: 10px; top: 10px; width: 348px; max-height: calc(100% - 20px);
+  overflow: auto; z-index: 4; background: rgba(13,18,26,.97); border: 1px solid #24313f; border-radius: 10px;
+  padding: 14px 16px; backdrop-filter: blur(6px); box-shadow: 0 12px 40px rgba(0,0,0,.55) }
+#detail .close { position: absolute; right: 8px; top: 8px; padding: 2px 7px; border-radius: 4px; z-index: 2 }
+.d-kind { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding-right: 26px }
+#detail h3 { margin: 5px 0 9px; font-size: 14px; line-height: 1.5 }
+.d-meta { display: flex; flex-wrap: wrap; gap: 7px; font-size: 10.5px; color: var(--mut); margin-bottom: 9px }
+#detail p { color: #b6c4d2; font-size: 12px }
+.d-link { display: inline-block; margin: 4px 0; color: var(--acc); font-size: 12px; text-decoration: none;
+  border: 1px solid #234152; padding: 4px 8px; border-radius: 6px }
+#detail pre { font-size: 10px; line-height: 1.45; color: #8ea3ba; max-height: 240px; overflow: auto;
+  background: #0a0f16; padding: 8px; border-radius: 6px; white-space: pre-wrap; word-break: break-word }
+#detail summary { cursor: pointer; font-size: 11px; color: var(--mut); margin-top: 9px }
+
+.stream-head { padding: 7px 10px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px }
+.sh-top { display: flex; justify-content: space-between; gap: 8px }
+#spark { width: 100%; height: 34px; display: block }
+#events { overflow-y: auto; flex: 1 }
+.empty { padding: 26px 14px; color: var(--mut); font-size: 12px; text-align: center }
+.daysep { position: sticky; top: 0; background: var(--panel); color: #55677c; font-size: 10px;
+  padding: 5px 10px; border-bottom: 1px solid var(--line2); z-index: 2 }
+.ev { padding: 8px 10px; border-bottom: 1px solid #151d27; cursor: pointer; border-left: 2px solid transparent }
+.ev:hover { background: #131b25 }
+.ev.match { border-left-color: #ffd166; background: #15181f }
+.ev.fresh { background: #10231f }
+.ev-top { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--mut) }
+.ev-top .kind { color: #93a6ba }
+.ev-top .src { font-family: ui-monospace, SFMono-Regular, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.ev-top .t { margin-left: auto; white-space: nowrap }
+.ev-title { margin-top: 3px; font-size: 12.5px; line-height: 1.45; color: #cddae6 }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px }
+.tags i { font-style: normal; font-size: 10px; color: #7f95ab; background: #101821;
+  border: 1px solid #1b2836; border-radius: 3px; padding: 1px 5px }
+
+#toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 14px); opacity: 0;
+  background: #16202c; border: 1px solid #2a3a4c; color: #cfe0ee; padding: 7px 14px; border-radius: 20px;
+  font-size: 12px; transition: .25s; pointer-events: none; z-index: 50 }
+#toast.on { opacity: 1; transform: translate(-50%, 0) }
+
+::-webkit-scrollbar { width: 9px; height: 9px }
+::-webkit-scrollbar-thumb { background: #1e2937; border-radius: 5px }
+::-webkit-scrollbar-track { background: transparent }
+
+@media (max-width: 1180px) {
+  main { grid-template-columns: 1fr 340px }
+  #rail { display: none }
+}
+@media (max-width: 820px) {
+  main { grid-template-columns: 1fr; grid-template-rows: 46vh 1fr }
+  #stream { border-left: 0; border-top: 1px solid var(--line) }
+}
+
+/* 叠加层：盖在地图上，不吃鼠标事件，否则会挡住拖拽/缩放 */
+#overlay { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 1 }
+.ev.sel { background: #14212e; border-left-color: var(--acc) }
